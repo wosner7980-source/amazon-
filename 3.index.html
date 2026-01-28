@@ -1,0 +1,1147 @@
+const { useState, useEffect, useRef } = React;
+
+// Default API Key (users can change it in settings)
+const DEFAULT_API_KEY = '6336C1F5B37444EE9C108B80A9BF5FFC';
+
+// Icons Component
+function Icon({ name, size = 24, color = "currentColor", ...props }) {
+    const icons = {
+        Activity: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+        ),
+        TrendingUp: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+        ),
+        TrendingDown: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                <polyline points="17 18 23 18 23 12"></polyline>
+            </svg>
+        ),
+        DollarSign: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+        ),
+        Package: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M16.5 9.4 7.55 4.24"></path>
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+        ),
+        Star: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill={props.fill || "none"} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+        ),
+        Bell: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+        ),
+        AlertTriangle: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        ),
+        CheckCircle: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        ),
+        XCircle: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+        ),
+        Plus: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        ),
+        Trash2: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+        ),
+        RefreshCw: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+        ),
+        Settings: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6m5.196-13.732 4.243 4.243M5.197 17.928l4.243 4.243m0-16.97-4.243 4.242M17.928 18.803l4.243-4.242M1 12h6m6 0h6"></path>
+            </svg>
+        ),
+        Eye: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        ),
+        Clock: (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        ),
+    };
+    
+    return icons[name] || null;
+}
+
+// Price History Chart Component
+function PriceChart({ history }) {
+    const chartRef = useRef(null);
+    const chartInstance = useRef(null);
+
+    useEffect(() => {
+        if (!chartRef.current || !history || history.length === 0) return;
+
+        const ctx = chartRef.current.getContext('2d');
+        
+        if (chartInstance.current) {
+            chartInstance.current.destroy();
+        }
+
+        chartInstance.current = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: history.map(h => new Date(h.timestamp).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })),
+                datasets: [{
+                    label: 'מחיר',
+                    data: history.map(h => h.price),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        rtl: true,
+                        textDirection: 'rtl',
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return `מחיר: $${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        return () => {
+            if (chartInstance.current) {
+                chartInstance.current.destroy();
+            }
+        };
+    }, [history]);
+
+    return (
+        <div className="chart-container">
+            <canvas ref={chartRef}></canvas>
+        </div>
+    );
+}
+
+// Main App Component
+function AmazonMonitor() {
+    const [apiKey, setApiKey] = useState(() => {
+        return localStorage.getItem('rainforestApiKey') || DEFAULT_API_KEY;
+    });
+    const [showSettings, setShowSettings] = useState(false);
+    const [products, setProducts] = useState(() => {
+        const saved = localStorage.getItem('monitoredProducts');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [newProductUrl, setNewProductUrl] = useState('');
+    const [alerts, setAlerts] = useState([]);
+    const [isMonitoring, setIsMonitoring] = useState(false);
+    const [refreshInterval, setRefreshInterval] = useState(300);
+    const [stats, setStats] = useState({
+        totalProducts: 0,
+        activeAlerts: 0,
+        priceDrops: 0,
+        outOfStock: 0
+    });
+
+    // Save API key to localStorage
+    useEffect(() => {
+        if (apiKey) {
+            localStorage.setItem('rainforestApiKey', apiKey);
+        }
+    }, [apiKey]);
+
+    // Save products to localStorage
+    useEffect(() => {
+        localStorage.setItem('monitoredProducts', JSON.stringify(products));
+        updateStats();
+    }, [products]);
+
+    // Update statistics
+    const updateStats = () => {
+        const totalProducts = products.length;
+        const activeAlerts = alerts.filter(a => !a.read).length;
+        const priceDrops = products.filter(p => p.priceHistory && p.priceHistory.length > 1 && 
+            p.priceHistory[p.priceHistory.length - 1].price < p.priceHistory[p.priceHistory.length - 2].price).length;
+        const outOfStock = products.filter(p => !p.inStock).length;
+
+        setStats({ totalProducts, activeAlerts, priceDrops, outOfStock });
+    };
+
+    // Extract ASIN from Amazon URL
+    const extractAsin = (url) => {
+        const patterns = [
+            /\/dp\/([A-Z0-9]{10})/,
+            /\/product\/([A-Z0-9]{10})/,
+            /\/gp\/product\/([A-Z0-9]{10})/,
+            /ASIN=([A-Z0-9]{10})/
+        ];
+        
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) return match[1];
+        }
+        return null;
+    };
+
+    // Fetch product data from RainforestAPI
+    const fetchProductData = async (asin) => {
+        if (!apiKey) {
+            throw new Error('נא להזין API Key מ-RainforestAPI');
+        }
+
+        const params = {
+            api_key: apiKey,
+            type: 'product',
+            amazon_domain: 'amazon.com',
+            asin: asin
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+        const response = await fetch(`https://api.rainforestapi.com/request?${queryString}`);
+        
+        if (!response.ok) {
+            throw new Error('שגיאה בקריאה ל-API');
+        }
+
+        const data = await response.json();
+        
+        if (data.request_info && data.request_info.success === false) {
+            throw new Error(data.request_info.message || 'שגיאה בקבלת נתונים');
+        }
+
+        return data.product;
+    };
+
+    // Add new product to monitoring
+    const addProduct = async () => {
+        if (!newProductUrl.trim()) {
+            addAlert('נא להזין קישור למוצר', 'warning');
+            return;
+        }
+
+        const asin = extractAsin(newProductUrl);
+        if (!asin) {
+            addAlert('קישור לא תקין - נא להזין קישור מאמזון', 'error');
+            return;
+        }
+
+        if (products.some(p => p.asin === asin)) {
+            addAlert('המוצר כבר במעקב', 'warning');
+            return;
+        }
+
+        try {
+            addAlert('מוסיף מוצר למעקב...', 'info');
+            const productData = await fetchProductData(asin);
+
+            const newProduct = {
+                id: Date.now(),
+                asin: asin,
+                title: productData.title,
+                price: productData.buybox_winner?.price?.value || 0,
+                rating: productData.rating || 0,
+                reviewsCount: productData.ratings_total || 0,
+                inStock: productData.buybox_winner?.availability?.raw !== 'Currently unavailable',
+                image: productData.main_image?.link || '',
+                url: `https://www.amazon.com/dp/${asin}`,
+                priceHistory: [{
+                    timestamp: Date.now(),
+                    price: productData.buybox_winner?.price?.value || 0
+                }],
+                lastChecked: Date.now(),
+                alerts: {
+                    priceThreshold: null,
+                    stockAlert: true,
+                    ratingAlert: true
+                }
+            };
+
+            setProducts(prev => [...prev, newProduct]);
+            setNewProductUrl('');
+            addAlert(`המוצר "${productData.title}" נוסף בהצלחה!`, 'success');
+        } catch (error) {
+            console.error('Error adding product:', error);
+            addAlert(error.message || 'שגיאה בהוספת המוצר', 'error');
+        }
+    };
+
+    // Update product data
+    const updateProduct = async (product) => {
+        try {
+            const productData = await fetchProductData(product.asin);
+            const newPrice = productData.buybox_winner?.price?.value || 0;
+            const newStock = productData.buybox_winner?.availability?.raw !== 'Currently unavailable';
+            const newRating = productData.rating || 0;
+
+            // Check for alerts
+            if (product.alerts.priceThreshold && newPrice < product.alerts.priceThreshold) {
+                addAlert(`💰 ירידת מחיר: ${product.title} - המחיר ירד ל-$${newPrice}!`, 'success', true);
+            }
+
+            if (product.alerts.stockAlert && !product.inStock && newStock) {
+                addAlert(`📦 חזרה למלאי: ${product.title} חזר למלאי!`, 'success', true);
+            }
+
+            if (product.alerts.stockAlert && product.inStock && !newStock) {
+                addAlert(`⚠️ אזל מהמלאי: ${product.title} אזל מהמלאי!`, 'warning', true);
+            }
+
+            const updatedProduct = {
+                ...product,
+                price: newPrice,
+                rating: newRating,
+                reviewsCount: productData.ratings_total || 0,
+                inStock: newStock,
+                priceHistory: [
+                    ...product.priceHistory,
+                    { timestamp: Date.now(), price: newPrice }
+                ].slice(-20),
+                lastChecked: Date.now()
+            };
+
+            setProducts(prev => prev.map(p => p.id === product.id ? updatedProduct : p));
+        } catch (error) {
+            console.error('Error updating product:', error);
+            addAlert(`שגיאה בעדכון ${product.title}`, 'error');
+        }
+    };
+
+    // Refresh all products
+    const refreshAllProducts = async () => {
+        if (!apiKey) {
+            addAlert('נא להזין API Key בהגדרות', 'warning');
+            return;
+        }
+
+        addAlert('מעדכן את כל המוצרים...', 'info');
+        
+        for (const product of products) {
+            await updateProduct(product);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        addAlert('כל המוצרים עודכנו בהצלחה!', 'success');
+    };
+
+    // Auto-refresh monitoring
+    useEffect(() => {
+        if (!isMonitoring || !apiKey || products.length === 0) return;
+
+        const interval = setInterval(async () => {
+            await refreshAllProducts();
+        }, refreshInterval * 1000);
+
+        return () => clearInterval(interval);
+    }, [isMonitoring, apiKey, products, refreshInterval]);
+
+    // Add alert
+    const addAlert = (message, type = 'info', important = false) => {
+        const newAlert = {
+            id: Date.now(),
+            message,
+            type,
+            important,
+            timestamp: Date.now(),
+            read: false
+        };
+        setAlerts(prev => [newAlert, ...prev].slice(0, 50));
+    };
+
+    // Remove product
+    const removeProduct = (id) => {
+        if (confirm('האם אתה בטוח שברצונך להסיר את המוצר מהמעקב?')) {
+            setProducts(prev => prev.filter(p => p.id !== id));
+            addAlert('המוצר הוסר מהמעקב', 'info');
+        }
+    };
+
+    // Update alert settings
+    const updateAlertSettings = (productId, settings) => {
+        setProducts(prev => prev.map(p => 
+            p.id === productId ? { ...p, alerts: { ...p.alerts, ...settings } } : p
+        ));
+    };
+
+    // Mark alert as read
+    const markAlertRead = (id) => {
+        setAlerts(prev => prev.map(a => a.id === id ? { ...a, read: true } : a));
+    };
+
+    // Load demo products
+    const loadDemoProducts = () => {
+        const demoProducts = [
+            {
+                id: Date.now(),
+                asin: 'B08N5WRWNW',
+                title: 'Apple AirPods Pro (2nd Generation)',
+                price: 249.99,
+                rating: 4.7,
+                reviewsCount: 23456,
+                inStock: true,
+                image: 'https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg',
+                url: 'https://www.amazon.com/dp/B08N5WRWNW',
+                priceHistory: [
+                    { timestamp: Date.now() - 3600000 * 4, price: 259.99 },
+                    { timestamp: Date.now() - 3600000 * 3, price: 254.99 },
+                    { timestamp: Date.now() - 3600000 * 2, price: 252.99 },
+                    { timestamp: Date.now() - 3600000, price: 249.99 },
+                    { timestamp: Date.now(), price: 249.99 }
+                ],
+                lastChecked: Date.now(),
+                alerts: {
+                    priceThreshold: 240,
+                    stockAlert: true,
+                    ratingAlert: true
+                }
+            }
+        ];
+        setProducts(demoProducts);
+        addAlert('נוספו מוצרי דמו למעקב', 'success');
+    };
+
+    return (
+        <div style={{ minHeight: '100vh', padding: '20px' }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                {/* Header */}
+                <div className="glass" style={{
+                    borderRadius: '20px',
+                    padding: '30px',
+                    marginBottom: '30px',
+                    animation: 'fadeIn 0.5s ease-out'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '20px'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <div style={{
+                                width: '60px',
+                                height: '60px',
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                borderRadius: '15px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)'
+                            }}>
+                                <Icon name="Activity" size={32} color="#fff" />
+                            </div>
+                            <div>
+                                <h1 className="header-title" style={{ color: '#fff', fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>
+                                    מערכת ניטור אמזון
+                                </h1>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        background: isMonitoring ? '#10b981' : '#64748b',
+                                        padding: '4px 12px',
+                                        borderRadius: '20px',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        color: '#fff'
+                                    }}>
+                                        <div className="live-indicator" style={{
+                                            width: '8px',
+                                            height: '8px',
+                                            background: '#fff',
+                                            borderRadius: '50%'
+                                        }}></div>
+                                        {isMonitoring ? 'פעיל' : 'לא פעיל'}
+                                    </div>
+                                    <span style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '14px' }}>
+                                        מופעל על ידי RainforestAPI
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                                onClick={() => setIsMonitoring(!isMonitoring)}
+                                disabled={!apiKey || products.length === 0}
+                                style={{
+                                    padding: '12px 24px',
+                                    background: isMonitoring ? '#ef4444' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: (!apiKey || products.length === 0) ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    opacity: (!apiKey || products.length === 0) ? 0.5 : 1,
+                                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
+                                }}
+                            >
+                                <Icon name={isMonitoring ? "XCircle" : "CheckCircle"} size={18} />
+                                {isMonitoring ? 'עצור ניטור' : 'התחל ניטור'}
+                            </button>
+
+                            <button
+                                onClick={refreshAllProducts}
+                                disabled={!apiKey || products.length === 0}
+                                style={{
+                                    padding: '12px 24px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    color: '#fff',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '12px',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: (!apiKey || products.length === 0) ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    opacity: (!apiKey || products.length === 0) ? 0.5 : 1
+                                }}
+                            >
+                                <Icon name="RefreshCw" size={18} />
+                                רענן הכל
+                            </button>
+
+                            <button
+                                onClick={() => setShowSettings(!showSettings)}
+                                style={{
+                                    padding: '12px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    color: '#fff',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '12px',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <Icon name="Settings" size={18} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Settings Panel */}
+                {showSettings && (
+                    <div className="glass" style={{
+                        borderRadius: '20px',
+                        padding: '30px',
+                        marginBottom: '30px',
+                        animation: 'fadeIn 0.3s ease-out'
+                    }}>
+                        <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>
+                            ⚙️ הגדרות
+                        </h3>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ color: 'rgba(255, 255, 255, 0.9)', display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                RainforestAPI Key:
+                            </label>
+                            <input
+                                type="text"
+                                value={apiKey}
+                                onChange={(e) => setApiKey(e.target.value)}
+                                placeholder="הזן את ה-API Key שלך"
+                                style={{
+                                    width: '100%',
+                                    maxWidth: '500px',
+                                    padding: '12px 16px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '10px',
+                                    color: '#fff',
+                                    fontSize: '14px'
+                                }}
+                            />
+                            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px', marginTop: '8px' }}>
+                                💡 יש לך כבר API Key מוגדר! ניתן לשנות אם צריך
+                            </p>
+                        </div>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ color: 'rgba(255, 255, 255, 0.9)', display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                מרווח רענון (שניות):
+                            </label>
+                            <select
+                                value={refreshInterval}
+                                onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                                style={{
+                                    padding: '12px 16px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '10px',
+                                    color: '#fff',
+                                    fontSize: '14px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <option value={60} style={{ background: '#1e293b' }}>דקה אחת</option>
+                                <option value={300} style={{ background: '#1e293b' }}>5 דקות</option>
+                                <option value={600} style={{ background: '#1e293b' }}>10 דקות</option>
+                                <option value={1800} style={{ background: '#1e293b' }}>30 דקות</option>
+                                <option value={3600} style={{ background: '#1e293b' }}>שעה</option>
+                            </select>
+                        </div>
+
+                        <button
+                            onClick={loadDemoProducts}
+                            style={{
+                                padding: '10px 20px',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                color: '#fff',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                borderRadius: '10px',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            👁️ טען מוצרי דמו
+                        </button>
+                    </div>
+                )}
+
+                {/* Statistics */}
+                <div className="stats-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '20px',
+                    marginBottom: '30px'
+                }}>
+                    <div className="gradient-secondary" style={{
+                        borderRadius: '16px',
+                        padding: '24px',
+                        boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)',
+                        animation: 'fadeIn 0.5s ease-out 0.1s both'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
+                                    סה"כ מוצרים
+                                </p>
+                                <h3 style={{ color: '#fff', fontSize: '32px', fontWeight: '800' }}>
+                                    {stats.totalProducts}
+                                </h3>
+                            </div>
+                            <Icon name="Package" size={40} color="rgba(255, 255, 255, 0.8)" />
+                        </div>
+                    </div>
+
+                    <div className="gradient-primary" style={{
+                        borderRadius: '16px',
+                        padding: '24px',
+                        boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)',
+                        animation: 'fadeIn 0.5s ease-out 0.2s both'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
+                                    ירידות מחיר
+                                </p>
+                                <h3 style={{ color: '#fff', fontSize: '32px', fontWeight: '800' }}>
+                                    {stats.priceDrops}
+                                </h3>
+                            </div>
+                            <Icon name="TrendingDown" size={40} color="rgba(255, 255, 255, 0.8)" />
+                        </div>
+                    </div>
+
+                    <div className="gradient-warning" style={{
+                        borderRadius: '16px',
+                        padding: '24px',
+                        boxShadow: '0 10px 30px rgba(245, 158, 11, 0.3)',
+                        animation: 'fadeIn 0.5s ease-out 0.3s both'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
+                                    התראות פעילות
+                                </p>
+                                <h3 style={{ color: '#fff', fontSize: '32px', fontWeight: '800' }}>
+                                    {stats.activeAlerts}
+                                </h3>
+                            </div>
+                            <Icon name="Bell" size={40} color="rgba(255, 255, 255, 0.8)" />
+                        </div>
+                    </div>
+
+                    <div className="gradient-danger" style={{
+                        borderRadius: '16px',
+                        padding: '24px',
+                        boxShadow: '0 10px 30px rgba(239, 68, 68, 0.3)',
+                        animation: 'fadeIn 0.5s ease-out 0.4s both'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
+                                    אזל מהמלאי
+                                </p>
+                                <h3 style={{ color: '#fff', fontSize: '32px', fontWeight: '800' }}>
+                                    {stats.outOfStock}
+                                </h3>
+                            </div>
+                            <Icon name="AlertTriangle" size={40} color="rgba(255, 255, 255, 0.8)" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Add Product */}
+                <div className="glass" style={{
+                    borderRadius: '20px',
+                    padding: '30px',
+                    marginBottom: '30px',
+                    animation: 'fadeIn 0.5s ease-out 0.5s both'
+                }}>
+                    <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Icon name="Plus" size={24} color="#10b981" />
+                        הוסף מוצר למעקב
+                    </h3>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <input
+                            type="text"
+                            value={newProductUrl}
+                            onChange={(e) => setNewProductUrl(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && addProduct()}
+                            placeholder="https://www.amazon.com/dp/B08N5WRWNW"
+                            style={{
+                                flex: '1 1 300px',
+                                padding: '14px 18px',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                borderRadius: '12px',
+                                color: '#fff',
+                                fontSize: '14px',
+                                minWidth: 0
+                            }}
+                        />
+                        <button
+                            onClick={addProduct}
+                            style={{
+                                padding: '14px 28px',
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <Icon name="Plus" size={18} />
+                            הוסף למעקב
+                        </button>
+                    </div>
+                </div>
+
+                {/* Alerts Feed */}
+                {alerts.length > 0 && (
+                    <div className="glass" style={{
+                        borderRadius: '20px',
+                        padding: '30px',
+                        marginBottom: '30px',
+                        animation: 'fadeIn 0.5s ease-out 0.6s both'
+                    }}>
+                        <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Icon name="Bell" size={24} color="#f59e0b" />
+                            התראות אחרונות
+                        </h3>
+                        <div className="scrollbar-custom" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {alerts.slice(0, 10).map((alert) => {
+                                const bgColor = alert.type === 'success' ? 'rgba(16, 185, 129, 0.1)' :
+                                               alert.type === 'warning' ? 'rgba(245, 158, 11, 0.1)' :
+                                               alert.type === 'error' ? 'rgba(239, 68, 68, 0.1)' :
+                                               'rgba(59, 130, 246, 0.1)';
+                                
+                                const borderColor = alert.type === 'success' ? 'rgba(16, 185, 129, 0.3)' :
+                                                   alert.type === 'warning' ? 'rgba(245, 158, 11, 0.3)' :
+                                                   alert.type === 'error' ? 'rgba(239, 68, 68, 0.3)' :
+                                                   'rgba(59, 130, 246, 0.3)';
+
+                                const icon = alert.type === 'success' ? 'CheckCircle' :
+                                            alert.type === 'warning' ? 'AlertTriangle' :
+                                            alert.type === 'error' ? 'XCircle' : 'Bell';
+
+                                return (
+                                    <div
+                                        key={alert.id}
+                                        className={alert.important ? 'alert-shake' : 'alert-enter'}
+                                        onClick={() => markAlertRead(alert.id)}
+                                        style={{
+                                            padding: '16px',
+                                            background: bgColor,
+                                            border: `1px solid ${borderColor}`,
+                                            borderRadius: '12px',
+                                            marginBottom: '12px',
+                                            cursor: 'pointer',
+                                            opacity: alert.read ? 0.6 : 1
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
+                                            <Icon name={icon} size={20} color="#fff" style={{ flexShrink: 0, marginTop: '2px' }} />
+                                            <div style={{ flex: 1 }}>
+                                                <p style={{ color: '#fff', fontSize: '14px', lineHeight: '1.5', marginBottom: '4px' }}>
+                                                    {alert.message}
+                                                </p>
+                                                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }}>
+                                                    {new Date(alert.timestamp).toLocaleTimeString('he-IL')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Products Grid */}
+                {products.length === 0 ? (
+                    <div className="glass" style={{
+                        borderRadius: '20px',
+                        padding: '60px 30px',
+                        textAlign: 'center',
+                        animation: 'fadeIn 0.5s ease-out 0.7s both'
+                    }}>
+                        <Icon name="Package" size={64} color="rgba(255, 255, 255, 0.3)" style={{ marginBottom: '20px' }} />
+                        <h3 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+                            אין מוצרים במעקב
+                        </h3>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '16px', marginBottom: '30px', maxWidth: '500px', margin: '0 auto 30px' }}>
+                            הוסף מוצרים מאמזון כדי להתחיל לנטר מחירים, זמינות ודירוגים בזמן אמת
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <button
+                                onClick={loadDemoProducts}
+                                style={{
+                                    padding: '14px 28px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    color: '#fff',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '12px',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                👁️ טען דוגמה
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="products-grid" style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+                        gap: '20px'
+                    }}>
+                        {products.map((product, index) => (
+                            <div
+                                key={product.id}
+                                className="monitoring-card glass"
+                                style={{
+                                    borderRadius: '20px',
+                                    padding: '24px',
+                                    animationDelay: `${index * 0.1}s`
+                                }}
+                            >
+                                {/* Product Header */}
+                                <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+                                    {product.image && (
+                                        <img
+                                            src={product.image}
+                                            alt={product.title}
+                                            style={{
+                                                width: '80px',
+                                                height: '80px',
+                                                objectFit: 'contain',
+                                                borderRadius: '12px',
+                                                background: '#fff'
+                                            }}
+                                        />
+                                    )}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <h4 className="text-truncate-2" style={{
+                                            color: '#fff',
+                                            fontSize: '16px',
+                                            fontWeight: '600',
+                                            marginBottom: '8px'
+                                        }}>
+                                            {product.title}
+                                        </h4>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                            <span style={{
+                                                padding: '4px 10px',
+                                                background: product.inStock ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                                                color: product.inStock ? '#10b981' : '#ef4444',
+                                                borderRadius: '6px',
+                                                fontSize: '12px',
+                                                fontWeight: '600'
+                                            }}>
+                                                {product.inStock ? '✓ במלאי' : '✗ אזל'}
+                                            </span>
+                                            <a
+                                                href={product.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    color: '#3b82f6',
+                                                    fontSize: '12px',
+                                                    textDecoration: 'none',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}
+                                            >
+                                                <Icon name="Eye" size={14} />
+                                                צפה באמזון
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Current Stats */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '12px',
+                                    marginBottom: '20px'
+                                }}>
+                                    <div style={{
+                                        padding: '12px',
+                                        background: 'rgba(16, 185, 129, 0.1)',
+                                        borderRadius: '10px',
+                                        textAlign: 'center'
+                                    }}>
+                                        <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px', marginBottom: '4px' }}>
+                                            מחיר
+                                        </p>
+                                        <p style={{ color: '#10b981', fontSize: '20px', fontWeight: '700' }}>
+                                            ${product.price}
+                                        </p>
+                                    </div>
+                                    <div style={{
+                                        padding: '12px',
+                                        background: 'rgba(245, 158, 11, 0.1)',
+                                        borderRadius: '10px',
+                                        textAlign: 'center'
+                                    }}>
+                                        <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px', marginBottom: '4px' }}>
+                                            דירוג
+                                        </p>
+                                        <p style={{ color: '#f59e0b', fontSize: '20px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            <Icon name="Star" size={16} fill="#f59e0b" color="#f59e0b" />
+                                            {product.rating}
+                                        </p>
+                                    </div>
+                                    <div style={{
+                                        padding: '12px',
+                                        background: 'rgba(59, 130, 246, 0.1)',
+                                        borderRadius: '10px',
+                                        textAlign: 'center'
+                                    }}>
+                                        <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px', marginBottom: '4px' }}>
+                                            ביקורות
+                                        </p>
+                                        <p style={{ color: '#3b82f6', fontSize: '16px', fontWeight: '700' }}>
+                                            {product.reviewsCount.toLocaleString()}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Price History Chart */}
+                                {product.priceHistory && product.priceHistory.length > 1 && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <h5 style={{ color: '#fff', fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>
+                                            📈 היסטוריית מחירים
+                                        </h5>
+                                        <PriceChart history={product.priceHistory} />
+                                    </div>
+                                )}
+
+                                {/* Alert Settings */}
+                                <div style={{
+                                    padding: '16px',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    borderRadius: '12px',
+                                    marginBottom: '16px'
+                                }}>
+                                    <h5 style={{ color: '#fff', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>
+                                        🔔 הגדרות התראות
+                                    </h5>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <label style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '13px', flex: 1 }}>
+                                                התראה כשהמחיר יורד מתחת ל:
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={product.alerts.priceThreshold || ''}
+                                                onChange={(e) => updateAlertSettings(product.id, { priceThreshold: e.target.value ? Number(e.target.value) : null })}
+                                                placeholder="$"
+                                                style={{
+                                                    width: '80px',
+                                                    padding: '6px 10px',
+                                                    background: 'rgba(255, 255, 255, 0.1)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                                    borderRadius: '6px',
+                                                    color: '#fff',
+                                                    fontSize: '13px'
+                                                }}
+                                            />
+                                        </div>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={product.alerts.stockAlert}
+                                                onChange={(e) => updateAlertSettings(product.id, { stockAlert: e.target.checked })}
+                                                style={{ cursor: 'pointer' }}
+                                            />
+                                            <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '13px' }}>
+                                                התראה על שינויים במלאי
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Last Checked & Actions */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }}>
+                                        <Icon name="Clock" size={14} />
+                                        עודכן: {new Date(product.lastChecked).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                    <button
+                                        onClick={() => removeProduct(product.id)}
+                                        style={{
+                                            padding: '8px 16px',
+                                            background: 'rgba(239, 68, 68, 0.2)',
+                                            color: '#ef4444',
+                                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                                            borderRadius: '8px',
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}
+                                    >
+                                        <Icon name="Trash2" size={14} />
+                                        הסר
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Footer */}
+                <div style={{
+                    marginTop: '40px',
+                    textAlign: 'center',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontSize: '14px'
+                }}>
+                    <p>🌐 מופעל על ידי RainforestAPI • ניטור בזמן אמת • נתונים מדויקים</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Render the app
+ReactDOM.render(<AmazonMonitor />, document.getElementById('root'));
