@@ -294,6 +294,43 @@
                         reviewsCount = parseInt(reviewsText) || 0;
                     }
 
+                    // Extract seller information
+                    let sellers = [];
+                    
+                    // Try to find the main seller
+                    const sellerElement = doc.querySelector('#sellerProfileTriggerId');
+                    const merchantInfoElement = doc.querySelector('#merchant-info');
+                    
+                    if (sellerElement || merchantInfoElement) {
+                        let sellerName = 'Amazon.com';
+                        let sellerUrl = null;
+                        
+                        if (sellerElement) {
+                            sellerName = sellerElement.textContent.trim();
+                            const sellerLink = doc.querySelector('a#sellerProfileTriggerId');
+                            if (sellerLink && sellerLink.href) {
+                                sellerUrl = sellerLink.href.startsWith('http') ? 
+                                    sellerLink.href : 
+                                    `https://www.amazon.com${sellerLink.getAttribute('href')}`;
+                            }
+                        } else if (merchantInfoElement) {
+                            const merchantText = merchantInfoElement.textContent;
+                            if (merchantText.includes('Amazon.com')) {
+                                sellerName = 'Amazon.com';
+                                sellerUrl = 'https://www.amazon.com';
+                            }
+                        }
+                        
+                        sellers.push({
+                            name: sellerName,
+                            url: sellerUrl
+                        });
+                    }
+                    
+                    // Try to extract ASIN for "other sellers" link
+                    const asin = extractAsin(url);
+                    const otherSellersUrl = asin ? `https://www.amazon.com/gp/offer-listing/${asin}` : null;
+
                     setProgress(80);
                     setStatusMessage('💡 מייצר ניתוח...');
 
@@ -301,7 +338,10 @@
                         productName: productName || 'מוצר מאמזון',
                         price: price || 29.99,
                         rating: rating || 4.5,
-                        reviewsCount: reviewsCount || 1000
+                        reviewsCount: reviewsCount || 1000,
+                        sellers: sellers,
+                        otherSellersUrl: otherSellersUrl,
+                        productUrl: url
                     };
 
                 } catch (error) {
@@ -354,26 +394,36 @@
                     }
                 ];
 
-                const topSellers = [
-                    {
-                        seller: 'המוכר הראשי',
+                // Use real seller data if available
+                const topSellers = [];
+                
+                if (scrapedData.sellers && scrapedData.sellers.length > 0) {
+                    // Add the main seller from scraping
+                    topSellers.push({
+                        seller: scrapedData.sellers[0].name,
                         price: basePrice,
                         sales: `${Math.floor(scrapedData.reviewsCount * 0.5)}+`,
-                        rating: scrapedData.rating
-                    },
-                    {
-                        seller: 'מוכר משני',
-                        price: basePrice - 2,
-                        sales: `${Math.floor(scrapedData.reviewsCount * 0.3)}+`,
-                        rating: Math.max(4, scrapedData.rating - 0.2)
-                    },
-                    {
-                        seller: 'מוכר נוסף',
-                        price: basePrice + 2,
-                        sales: `${Math.floor(scrapedData.reviewsCount * 0.2)}+`,
-                        rating: Math.max(4, scrapedData.rating - 0.1)
-                    }
-                ];
+                        rating: scrapedData.rating,
+                        url: scrapedData.sellers[0].url
+                    });
+                }
+                
+                // Add simulated additional sellers with link to "Other Sellers" page
+                topSellers.push({
+                    seller: 'מוכרים נוספים באמזון',
+                    price: basePrice - 2,
+                    sales: `${Math.floor(scrapedData.reviewsCount * 0.3)}+`,
+                    rating: Math.max(4, scrapedData.rating - 0.2),
+                    url: scrapedData.otherSellersUrl
+                });
+                
+                topSellers.push({
+                    seller: 'צפה בכל המוכרים',
+                    price: basePrice + 2,
+                    sales: `${Math.floor(scrapedData.reviewsCount * 0.2)}+`,
+                    rating: Math.max(4, scrapedData.rating - 0.1),
+                    url: scrapedData.otherSellersUrl
+                });
 
                 const alibabaSuppliers = [
                     {
@@ -483,9 +533,27 @@
                     productName: "מברשת שיער אלקטרונית",
                     category: "טיפוח ויופי",
                     topSellers: [
-                        { seller: 'BeautyTech Pro', price: 29.99, sales: '15000+', rating: 4.7 },
-                        { seller: 'HairCare Direct', price: 24.99, sales: '8500+', rating: 4.5 },
-                        { seller: 'StyleMaster', price: 27.49, sales: '12000+', rating: 4.6 }
+                        { 
+                            seller: 'BeautyTech Pro', 
+                            price: 29.99, 
+                            sales: '15000+', 
+                            rating: 4.7,
+                            url: 'https://www.amazon.com/s?me=A2L77EE7U53NWQ'
+                        },
+                        { 
+                            seller: 'HairCare Direct', 
+                            price: 24.99, 
+                            sales: '8500+', 
+                            rating: 4.5,
+                            url: 'https://www.amazon.com/s?me=A1KWJVS57NX03Q'
+                        },
+                        { 
+                            seller: 'StyleMaster', 
+                            price: 27.49, 
+                            sales: '12000+', 
+                            rating: 4.6,
+                            url: 'https://www.amazon.com'
+                        }
                     ],
                     alibabaSuppliers: [
                         { supplier: 'Shenzhen Beauty Electronics Co.', moq: 500, unitPrice: 6.80 },
@@ -504,7 +572,7 @@
                         estimatedProfit: '15.00',
                         profitMargin: '55%',
                         recommendation: 'מומלץ - מוצר עם ביקוש גבוה',
-                        notes: 'זוהי דוגמה להמחשה. הזן קישור אמיתי לקבלת ניתוח מבוסס scraping.'
+                        notes: 'זוהי דוגמה להמחשה. הזן קישור אמיתי לקבלת ניתוח מבוסס scraping עם שמות מוכרים אמיתיים וקישורים ישירים!'
                     }
                 });
                 setError('');
@@ -833,6 +901,28 @@
                                                             }}>
                                                                 ${seller.price}
                                                             </div>
+                                                            {seller.url && (
+                                                                <a 
+                                                                    href={seller.url} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer" 
+                                                                    style={{
+                                                                        fontSize: '14px',
+                                                                        color: '#667eea',
+                                                                        textDecoration: 'none',
+                                                                        display: 'inline-flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '4px',
+                                                                        marginTop: '4px',
+                                                                        fontWeight: '600',
+                                                                        transition: 'all 0.2s'
+                                                                    }}
+                                                                    onMouseOver={(e) => e.target.style.color = '#764ba2'}
+                                                                    onMouseOut={(e) => e.target.style.color = '#667eea'}
+                                                                >
+                                                                    🔗 צפה באמזון <Icon name="ExternalLink" size={14} />
+                                                                </a>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
